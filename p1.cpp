@@ -12,7 +12,7 @@ using namespace std;
 
 vector< vector<int> > buildPageTable(const char * fname);
 void printPageTable(vector< vector<int> > pageTable);
-int clockReplacement(& vector<vector<int>> table, int idx, int ppn);
+void clockReplacement(vector<vector<int>> & table, int idx, int ppn);
 
 int virtAddrBits, physAddrBits, numBytes;
 
@@ -39,26 +39,29 @@ int main (int argc, const char * argv []) {
         idx >> (virtAddrBits - bits);
         int ppn = 0;
         int offset = 0;
-        //cout << idx << endl;
-        if (table[idx][0] == 0) {
-            if (table[idx][1] == 1) {
+        if (idx < table.size() && table[idx][0] == 0) {
+            if (table[idx][1] == 1) { // check permission bit
 #ifdef PROB1
                 cout << "DISK" << endl;
 #else
                 cout << "PAGE FAULT" << endl;
-                clockIdx = clockReplacement(table, clockIdx,)
+                clockReplacement(table, clockIdx, table[idx][2]);
                 cout << table[clockIdx][2] << endl;
                 clockIdx = (clockIdx + 1) % table.size();
+#endif
             }
             else
-                cout << "SEGFAULT" << endl;
+                cout << "SEGFAULT" << endl; // no permission
         }
-        else {
+        else if (idx < table.size()) {
             ppn = table[idx][2];
             idx << (virtAddrBits - bits);
             offset = va - idx;
             ppn << (virtAddrBits - bits);
             cout << (ppn + offset) << endl;
+        }
+        else {
+            cout << "Index not in page table" << endl;
         }
         
     }
@@ -97,7 +100,7 @@ void printPageTable(vector< vector<int> > pageTable) {
     }
 }
 
-void clockReplacement(& vector<vector<int>> table, int idx, int ppn) {
+void clockReplacement(vector<vector<int>> & table, int idx, int ppn) {
     table[idx][0] = 1;
     table[idx][1] = 1;
     table[idx][2] = ppn;
