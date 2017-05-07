@@ -3,10 +3,10 @@
 // H4 P3
 
 /*
- My program opens "test.txt" read-only and reads the first two digits
- it then closes the file and spawns a new process to un-link the file,
- deleting it from the directory. It then tries to read it and errors out
- because the file no longer exists. 
+ My program opens "test.txt" and reads from it initially.
+ A process is spawned to unlink the file. 
+ The file is then read again from the parent process 
+ and child process
  */
 
 #include <stdio.h>
@@ -14,6 +14,7 @@
 #include <sys/types.h>
 #include <sys/stat.h>
 #include <sys/wait.h>
+#include <sys/unistd.h>
 
 #define PERMS 0666
 
@@ -27,14 +28,14 @@ int main (int argc, char* argv []) {
     
     int fd = open("test.txt", O_RDONLY);
     if (fd == -1) {
-        printf("Error opening file\n");
-        return;
+        printf("Error opening 'test.txt'. Are you sure it exists?\n");
+        return 0;
     }
     
     lseek(fd, 0, 0);
     read(fd, buffer, sizeof(12));
-    printf("%s was read from file\n", buffer);
-    close(fd);
+    printf("First read: %s was read from 'test.txt'\n", buffer);
+    
     
     if (pid == fork()) {
         if (unlink("test.txt") == -1) {
@@ -42,10 +43,14 @@ int main (int argc, char* argv []) {
         }
     }
     
-    waitpid(pid, &status, WNOHANG);
+    while(wait(NULL) > 0);
+    
     lseek(fd, 0, 0);
     if (read(fd, buffer, sizeof(12)) == -1) {
-        printf("Cannot read from file\n");
+        printf("Cannot read from 'test.txt'. Are you sure it exists?\n");
+    }
+    else {
+        printf("Second read: %s was read from 'test.txt'\n", buffer);
     }
     
     return 0;
