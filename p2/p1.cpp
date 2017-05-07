@@ -34,12 +34,12 @@ int main (int argc, const char * argv []) {
         else
             va = stoi(virtualAddress, nullptr, 16);
         
-        int bits = log2(table.size());
+        int indexBits = log2(numBytes);
+        cout << "idx bits: " << indexBits << endl;
         int idx = va;
-        idx >> (virtAddrBits - bits);
-        int ppn = 0;
-        int offset = 0;
-        if (idx < table.size() && table[idx][0] == 0) {
+        idx = idx >> (virtAddrBits - indexBits); // right shift to get index
+        int ppn = 0, offset = 0;
+        if (idx < table.size() && table[idx][0] == 0) { // if bit is invalid
             if (table[idx][1] == 1) { // check permission bit
 #ifdef PROB1
                 cout << "DISK" << endl;
@@ -53,12 +53,10 @@ int main (int argc, const char * argv []) {
             else
                 cout << "SEGFAULT" << endl; // no permission
         }
-        else if (idx < table.size()) {
-            ppn = table[idx][2];
-            idx << (virtAddrBits - bits);
-            offset = va - idx;
-            ppn << (virtAddrBits - bits);
-            cout << (ppn + offset) << endl;
+        else if (idx < table.size()) { // if valid == true and index is in table
+            ppn = table[idx][2];    // get phys page num
+            offset = va - idx;      // get offset
+            cout << (ppn + offset) << endl; // physical address
         }
         else {
             cout << "Index not in page table" << endl;
@@ -92,18 +90,20 @@ vector< vector<int> > buildPageTable(const char * fname) {
 }
 
 void printPageTable(vector< vector<int> > pageTable) {
+    cout << "idx" << '\t' << "valid" << '\t' << "per" << '\t' << "ppn" << '\t' << "use" << endl;
     for (int i = 0; i < pageTable.size() - 1; i++) {
+        cout << i << '\t';
         for (int j = 0; j < pageTable[i].size(); j++) {
-            cout << pageTable[i][j] << " ";
+            cout << pageTable[i][j] << '\t';
         }
         cout << endl;
     }
 }
 
 void clockReplacement(vector<vector<int>> & table, int idx, int ppn) {
-    table[idx][0] = 1;
-    table[idx][1] = 1;
-    table[idx][2] = ppn;
+//    table[idx][0] = 1;
+//    table[idx][1] = 1;
+//    table[idx][2] = ppn;
     
     return;
 }
