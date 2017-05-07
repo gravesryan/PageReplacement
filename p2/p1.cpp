@@ -12,32 +12,31 @@ using namespace std;
 
 vector< vector<int> > buildPageTable(const char * fname);
 void printPageTable(vector< vector<int> > pageTable);
-void clockReplacement(vector<vector<int>> & table, int idx, int ppn);
+int clockReplacement(vector<vector<int>> & table, int idx, int ppn);
+void replaceIndex(vector<vector<int>> & table, int idx, int ppn);
 
 int virtAddrBits, physAddrBits, numBytes;
 
 int main (int argc, const char * argv []) {
+    // build page table
     vector< vector<int> > table = buildPageTable(argv[1]);
-    printPageTable(table);
-    int clockIdx = 0;
+    printPageTable(table); // print formatted page table
     
+    // create vars needed
+    int clockIdx = 0, va = 0;
     string virtualAddress = "";
-    int va = 0;
+    
     while (getline(cin, virtualAddress)) {
-        bool isHex = false;
         
-        if (virtualAddress[1] == 'x')
-            isHex = true;
-        
-        if (!isHex)
-            va = stoi(virtualAddress, nullptr, 10);
-        else
+        if (virtualAddress[1] == 'x')   // input is hex
             va = stoi(virtualAddress, nullptr, 16);
+        else if (virtualAddress == "") { continue; } // catch input error
+        else    // input is decimal
+            va = stoi(virtualAddress, nullptr, 10);
         
-        int indexBits = log2(numBytes);
-        cout << "idx bits: " << indexBits << endl;
-        int idx = va;
-        idx = idx >> (virtAddrBits - indexBits); // right shift to get index
+        int indexBits = log2(numBytes); // get num of index bits
+        int idx = va >> (virtAddrBits - indexBits); // right shift to get index
+        cout << "index: " << idx << endl;
         int ppn = 0, offset = 0;
         if (idx < table.size() && table[idx][0] == 0) { // if bit is invalid
             if (table[idx][1] == 1) { // check permission bit
@@ -47,22 +46,19 @@ int main (int argc, const char * argv []) {
                 cout << "PAGE FAULT" << endl;
                 clockIdx = clockReplacement(table, clockIdx, table[idx][2]);
                 cout << table[clockIdx][2] << endl;
-                clockIdx = (clockIdx + 1) % table.size();
+//                clockIdx = (clockIdx + 1) % table.size();
 #endif
             }
             else
                 cout << "SEGFAULT" << endl; // no permission
         }
-        else if (idx < table.size()) { // if valid == true and index is in table
+        else if (idx < table.size()) { // if valid == true
             ppn = table[idx][2];    // get phys page num
             table[idx][3] = 1;
             offset = va - idx;      // get offset
             cout << (ppn + offset) << endl; // physical address
         }
-        else {
-            cout << "Index not in page table" << endl;
-        }
-        
+        printPageTable(table);
     }
     
     
@@ -101,14 +97,18 @@ void printPageTable(vector< vector<int> > pageTable) {
     }
 }
 
-void clockReplacement(vector<vector<int>> & table, int idx, int ppn) {
-    for (int i = idx; i < table.size(); i++) {
+int clockReplacement(vector<vector<int>> & table, int idx, int ppn) {
+    cout << endl << "clockReplacement called with index " << idx << endl;
+    int i;
+    for (i = idx; i < table.size(); i++) {
         if (table[i][3] == 0) {
+            cout << "Found use bit zero at idx " << idx << endl;
             replaceIndex(table, i, ppn);
             return i;
         }
         else {
-            table[i][3] == 0;
+            cout << "Setting index " << i << " use bit to 0" << endl;
+            table[i][3] = 0;
         }
     }
     table[i][3] = 0;
@@ -117,10 +117,10 @@ void clockReplacement(vector<vector<int>> & table, int idx, int ppn) {
 }
 
 void replaceIndex(vector<vector<int>> & table, int idx, int ppn) {
-    table[i][0] == 1;
-    table[i][1] == 1;
-    table[i][2] == ppn;
-    table[i][3] == 1;
+    table[idx][0] = 1;
+    table[idx][1] = 1;
+//    table[idx][2] = ppn;
+    table[idx][3] = 1;
     
-    return;
+    cout << "replacing idx " << idx << endl;
 }
