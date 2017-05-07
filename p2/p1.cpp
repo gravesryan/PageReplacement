@@ -45,7 +45,7 @@ int main (int argc, const char * argv []) {
                 cout << "DISK" << endl;
 #else
                 cout << "PAGE FAULT" << endl;
-                clockReplacement(table, clockIdx, table[idx][2]);
+                clockIdx = clockReplacement(table, clockIdx, table[idx][2]);
                 cout << table[clockIdx][2] << endl;
                 clockIdx = (clockIdx + 1) % table.size();
 #endif
@@ -55,6 +55,7 @@ int main (int argc, const char * argv []) {
         }
         else if (idx < table.size()) { // if valid == true and index is in table
             ppn = table[idx][2];    // get phys page num
+            table[idx][3] = 1;
             offset = va - idx;      // get offset
             cout << (ppn + offset) << endl; // physical address
         }
@@ -101,9 +102,25 @@ void printPageTable(vector< vector<int> > pageTable) {
 }
 
 void clockReplacement(vector<vector<int>> & table, int idx, int ppn) {
-//    table[idx][0] = 1;
-//    table[idx][1] = 1;
-//    table[idx][2] = ppn;
+    for (int i = idx; i < table.size(); i++) {
+        if (table[i][3] == 0) {
+            replaceIndex(table, i, ppn);
+            return i;
+        }
+        else {
+            table[i][3] == 0;
+        }
+    }
+    table[i][3] = 0;
+    replaceIndex(table, 0, ppn);
+    return 0;
+}
+
+void replaceIndex(vector<vector<int>> & table, int idx, int ppn) {
+    table[i][0] == 1;
+    table[i][1] == 1;
+    table[i][2] == ppn;
+    table[i][3] == 1;
     
     return;
 }
