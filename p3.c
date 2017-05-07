@@ -37,13 +37,13 @@ int main (int argc, char* argv []) {
     printf("First read: %s was read from 'test.txt'\n", buffer);
     
     
-    if (pid == fork()) {
+    if (pid = fork()) {
         if (unlink("test.txt") == -1) {
             printf("Error deleting file");
         }
     }
     
-    while(wait(NULL) > 0);
+    wait(NULL);
     
     lseek(fd, 0, 0);
     if (read(fd, buffer, sizeof(12)) == -1) {
